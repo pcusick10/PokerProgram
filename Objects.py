@@ -22,20 +22,6 @@ class Card:
     
     def __str__(self):
         return self.number + " of " + self.suit
-
-class River:
-
-    def __init__(self):
-        self.cards = []
     
-    def __str__(self):
-        return ", ".join(self.cards)
-    
-    def threeTurned(self):
-        i = 0
-        while i < 3:
-            self.cards.append(Main.randomCardGenerator().__str__())
-            i += 1
-    
-    def oneTurned(self):
-        self.cards.append(Main.randomCardGenerator().__str__())
+    def __eq__(self, other) -> bool:
+        return (self.suit == other.suit) and (self.number == other.number)

@@ -4,28 +4,27 @@ suitKey = ["Hearts", "Diamonds", "Spades", "Clubs"]
 numberKey = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
 players = []
 cardsDealt = []
+river = []
 
 def main():
     print("Welcome to PokerSim!")
     addPlayers()
     deal()
-    r = Objects.River()
-    r.threeTurned()
-    print(r)
-    r.oneTurned()
-    print(r)
-    r.oneTurned()
-    print(r)
-    return 0
+    threeTurned()
+    printRiver()
+    oneTurned()
+    printRiver()
+    oneTurned()
+    printRiver()
 
 def randomCardGenerator():
-    suit = randomSuit()
-    number = randomNumber()
-    if cardExists(number, suit):
+    x = Objects.Card(randomSuit(), randomNumber())
+    if cardExists(x):
+        #print(str(x) + " has already been dealt.")
         return randomCardGenerator()
     else:
-        x = Objects.Card(suit, number)
         cardsDealt.append(x)
+        #print(str(x) + " has been added to the cardsDealt array.")
         return x
         
 
@@ -36,10 +35,11 @@ def randomNumber():
     return numberKey[random.randint(0, 12)]
 
 def addPlayers():
-    x = int(input("Type the number of players you would like and press enter: "))
-    if (x <= 0) or (x > 9):
+    while 0 == 0:
+        x = int(input("Type the number of players you would like and press enter: "))
+        if (x > 0) and (x <= 9):
+            break
         print("You can't play with that number of players, no more than nine players are allowed, try again.")
-        addPlayers()
     i = 1
     while i <= x:
         newName = input("What would you like the name of Player " + str(i) + " to be: ")
@@ -47,23 +47,29 @@ def addPlayers():
         i += 1
 
 
-def cardExists(num, suit):
-    if cardsDealt:
-        for c in cardsDealt:
-            if (c.number == num) and (c.suit == suit):
-                return True
-        return False
+def cardExists(card):
+    for c in cardsDealt:
+        if (c == card):
+            return True
     return False
 
 def deal():
     for p in players:
-        x = randomCardGenerator()
-        y = randomCardGenerator()
-        cardsDealt.append(x)
-        cardsDealt.append(y)
         p.dealt(randomCardGenerator(), randomCardGenerator())
     for p in players:
         p.printHand()
+
+def threeTurned():
+    i = 0
+    while i < 3:
+        river.append(str(randomCardGenerator()))
+        i += 1
+
+def oneTurned():
+    river.append(str(randomCardGenerator()))
+
+def printRiver():
+    print(", ".join(river))
 
 
 
