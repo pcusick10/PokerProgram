@@ -2,10 +2,11 @@ import Main
 
 class Player:
 
-    def __init__(self, num, name):
+    def __init__(self, num, name, stack):
         self.playerName = name
         self.playerNum = num
         self.cards = []
+        self.stack = stack
     
     def dealt(self, cardone, cardtwo):
         self.cards.append(cardone)
@@ -13,6 +14,10 @@ class Player:
     
     def printHand(self):
         print(self.playerName + "'s hand is the " + str(self.cards[0]) + " and the " + str(self.cards[1]))
+    
+    def printAmount(self):
+        print(self.playerName + ": " + str(self.amount))
+
 
 class Card:
 
