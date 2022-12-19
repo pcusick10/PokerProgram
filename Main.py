@@ -8,35 +8,51 @@ cardsDealt = []
 river = []
 pot = 0
 action = Queue(maxsize=9)
-currentBet = 0
+currentBet = -1
+mostRecentBetter = ""
+startingPlayer = 0
 
 
 def main():
+    global currentBet, mostRecentBetter, river, cardsDealt
     print("Welcome to PokerSim!")
     addPlayers()
     numPlayers = len(players)
-    startingPlayer = 0
     while(0 == 0):
-        initQueue(startingPlayer)
+        initQueue()
+        deal()
+        actionPrompt()
+        mostRecentBetter = ""
+        currentBet = -1
+        flop()
+        printRiver()
+        actionPrompt()
+        mostRecentBetter = ""
+        currentBet = -1
+        turnAndRiver()
+        printRiver()
+        actionPrompt()
+        mostRecentBetter = ""
+        currentBet = -1
+        turnAndRiver()
+        printRiver()
+        actionPrompt()
+        #declareWinner()
         while(0 == 0):
-            deal()
-            actionPrompt()
-            flop()
-            printRiver()
-            actionPrompt()
-            turnAndRiver()
-            printRiver()
-            actionPrompt()
-            turnAndRiver()
-            printRiver()
-            actionPrompt()
+            x = str(input("Are you done using PokerSim (y/n)? "))
+            if x != "y" and x != "n":
+                print("Please type \"y\" or \"n\"")
+            else:
+                break
+        if x == "y":
+            print("Thanks for playing!")
+            break
     if startingPlayer == numPlayers - 1:
         startingPlayer = 0
     else:
         startingPlayer += 1
-
-       
-    
+    river = []
+    cardsDealt = []
 
 def randomCardGenerator():
     x = Objects.Card(randomSuit(), randomNumber())
@@ -48,7 +64,6 @@ def randomCardGenerator():
         #print(str(x) + " has been added to the cardsDealt array.")
         return x
         
-
 def randomSuit():
     return suitKey[random.randint(0, 3)]
 
@@ -64,12 +79,11 @@ def addPlayers():
     i = 1
     while i <= x:
         newName = input("What would you like the name of Player " + str(i) + " to be: ")
-        buyInAmount = input("How much is " + newName + " buying in? ")
+        buyInAmount = int(input("How much is " + newName + " buying in? "))
         np = Objects.Player(i, newName, buyInAmount)
         players.append(np)
         action.put(np)
         i += 1
-
 
 def cardExists(card):
     for c in cardsDealt:
@@ -99,22 +113,35 @@ def printRiver():
     print(", ".join(newRiver))
 
 def bet(player, amount):
+    global pot
     #if player.stack < amount:
         #print("You don't have enough money to place this bet")
-    print(player.name + " has bet " + str(amount))
+    print(player.playerName + " has bet " + str(amount))
     action.put(action.get())
     pot += amount
     player.stack -= amount
 
+def rize(player, amount):
+    global pot, mostRecentBetter, currentBet
+    print(player.playerName + " has raised the bet to " + str(amount))
+    mostRecentBetter = player.playerName
+    currentBet = amount
+    pot += amount
+    player.stack -= amount
+    action.put(action.get())
+
 def fold(player):
-    print(player.name + " has folded")
+    print(player.playerName + " has folded")
     action.get()
 
 def check(player):
-    print(player.name + " has checked")
+    global currentBet
+    print(player.playerName + " has checked")
     action.put(action.get())
+    currentBet = 0
 
-def initQueue(sp):
+def initQueue():
+    sp = startingPlayer
     if sp == 0:
         for p in players:
             action.put(p)
@@ -129,36 +156,49 @@ def initQueue(sp):
             i += 1
 
 def actionPrompt():
-    currentPlayer = action.queue[0]
-    print("Action is to " + currentPlayer.playerName)
-    if (currentBet != 0):
-        while 0 == 0:
-            x = str(input("Current bet is at " + str(currentBet) + ", choose to call, raise, or fold (c/r/f): "))
-            if (x != "c") or (x != "r") or (x != "f"):
-                print("Not a valid entry, please type \"c\" for call, \"r\" for raise, or \"f\" for fold.")
+    global currentPlayer, currentBet
+    while(0 == 0):
+        currentPlayer = action.queue[0]
+        if not allGood(currentPlayer):
+            print("Action is to " + currentPlayer.playerName)
+            if (currentBet != -1) and (currentBet != 0):
+                while 0 == 0:
+                    x = str(input("Current bet is at " + str(currentBet) + ", choose to call, raise, or fold (c/r/f): "))
+                    if (x != "c") and (x != "r") and (x != "f"):
+                        print("Not a valid entry, please type \"c\" for call, \"r\" for raise, or \"f\" for fold.")
+                    else:
+                        break
+                if x == "c":
+                    bet(currentPlayer, currentBet)
+                if x == "r":
+                    r = int(input("How much would you like to raise the current bet by? "))
+                    rize(currentPlayer, r + currentBet)
+                if x == "f":
+                    fold(currentPlayer)
             else:
-                break
-        if x == "c":
-            bet(currentPlayer, currentBet)
-        if x == "r":
-            r = input("How much would you like to raise the current bet by? ")
-            bet(currentPlayer, r + currentBet)
-        if x == "f":
-            print(currentPlayer.name + " has folded")
-            fold(currentPlayer)
+                while 0 == 0:
+                    x = str(input("No current bet, choose to check or raise (c/r): "))
+                    if (x != "c") and (x != "r"):
+                        print("Not a valid entry, please type \"c\" for check or \"r\" for raise")
+                    else:
+                        break
+                if x == "c":
+                    check(currentPlayer)
+                if x == "r":
+                    currentBet = 0
+                    r = int(input("How much would you like to raise? "))
+                    rize(currentPlayer, currentBet + r)
+        else:
+            break
+   
+def allGood(player):
+    global startingPlayer
+    if player.playerName == mostRecentBetter:
+        return True
+    elif (player == players[startingPlayer]) and (currentBet == 0):
+        return True
     else:
-        while 0 == 0:
-            x = str(input("No current bet, choose to check or bet (c/b): "))
-            if (x != "c") or (x != "b"):
-                print("Not a valid entry, please type \"c\" for check or \"b\" for bet")
-            else:
-                break
-        if x == "c":
-            check(currentPlayer)
-        if x == "b":
-            b = input("How much would you like to bet? ")
-            bet(currentPlayer, b)
-
+        return False
 
 if __name__ == "__main__":
     main()
