@@ -22,22 +22,31 @@ def main():
         initQueue()
         deal()
         actionPrompt()
-        mostRecentBetter = ""
-        currentBet = -1
-        flop()
-        printRiver()
-        actionPrompt()
-        mostRecentBetter = ""
-        currentBet = -1
-        turnAndRiver()
-        printRiver()
-        actionPrompt()
-        mostRecentBetter = ""
-        currentBet = -1
-        turnAndRiver()
-        printRiver()
-        actionPrompt()
-        #declareWinner()
+        if (action.qsize() != 1):
+            mostRecentBetter = ""
+            currentBet = -1
+            flop()
+            printRiver()
+            actionPrompt()
+            if (action.qsize() != 1):
+                mostRecentBetter = ""
+                currentBet = -1
+                turnAndRiver()
+                printRiver()
+                actionPrompt()
+                if (action.qsize() != 1):
+                    mostRecentBetter = ""
+                    currentBet = -1
+                    turnAndRiver()
+                    printRiver()
+                    actionPrompt()
+                else:
+                    declareWinner(action.queue[0])
+            else:
+                declareWinner(action.queue[0])
+        else:
+            declareWinner(action.queue[0])
+        declareWinner(checkCards(action))
         while(0 == 0):
             x = str(input("Are you done using PokerSim (y/n)? "))
             if x != "y" and x != "n":
@@ -199,6 +208,141 @@ def allGood(player):
         return True
     else:
         return False
+
+def flush(player):
+    hand = initHand(player)
+    for s in suitKey:
+        i = 0
+        for c in hand:
+            if(c.suit == s):
+                i += 1
+        if (i >= 5):
+            return True
+    return False
+    
+def pair(player):
+    hand = initHand(player)
+    for c in hand:
+        for card in hand:
+            if (c.number == card.number) and (c != card):
+                return True
+    return False
+
+def twoPair(player):
+    hand = initHand(player)
+    pairs = []
+    for c in hand:
+        for card in hand:
+            if (c.number == card.number) and (c != card) and (c.number not in pairs):
+                pairs.append(c.number)
+    if (len(pair) >= 2):
+        return True
+    return False
+
+def threeOfaKind(player):
+    hand = initHand(player)
+    for c in hand:
+        i = 1
+        for card in hand:
+            if (c.number == card.number) and (c != card):
+                i += 1
+        if (i >= 3):
+            return True
+    return False
+
+def fourOfAKind(player):
+    hand = initHand(player)
+    for c in hand:
+        i = 1
+        for card in hand:
+            if (c.number == card.number) and (c != card):
+                i += 1
+        if (i >= 4):
+            return True
+    return False
+
+def fullHouse(player):
+    hand = initHand(player)
+    cardCount = {i : hand.count(i) for i in numberKey}
+    pairs = 0
+    trips = 0
+    for c in cardCount:
+        if cardCount[c] == 2:
+            pair += 1
+        elif cardCount[c] == 3:
+            trips += 1
+    if (trips >= 1) and (pairs >= 1):
+        return True
+    return False
+
+def straight(player):
+    hand = sortCards(initHand(player))
+    mostInARow = 0
+    cardsInARow = 0
+    i = 0
+    while i < len(hand):
+        if (hand[i] == hand[i + 1] + 1):
+            cardsInARow += 1
+        else:
+            cardsInARow = 0
+        if cardsInARow == 5:
+            return True
+        i += 1
+    return False
+
+def initHand(player):
+    hand = river
+    for c in player.cards:
+        hand.append(c)
+    return hand
+
+def sortCards(hand):
+    #Returns a list of ints representing the index of the original card value in descending order, helps with determining if the hand has a straight
+    cardKeys = []
+    for c in hand:
+        cardKeys.append(numberKey.index(c.number))
+    sorted = []
+    i = 0
+    size = len(cardKeys)
+    while i < size:
+        max = max(cardKeys)
+        sorted.append(max)
+        cardKeys.remove(max)
+        i += 1
+    return sorted
+
+def max(hand):
+    max = 0
+    for c in hand:
+        if c > max:
+            max = c
+    return max
+    
+def checkCards(action):
+    for p in action:
+        if fourOfAKind(p):
+            p.setHandRank(7)
+        elif fullHouse(p):
+            p.setHandRank(6)
+        elif flush(p):
+            p.setHandRank(5)
+        elif straight(p):
+            p.setHandRank(4)
+        elif threeOfaKind(p):
+            p.setHandRank(3)
+        elif twoPair(p):
+            p.setHandRank(2)
+        elif pair(p):
+            p.setHandRank(1)
+    ranks = []
+    for p in players:
+        ranks.append(p.getHandRank())
+    return players[ranks.index(max)]
+
+
+def declareWinner(player):
+    print(player.playerName + " has won " + str(pot) + "!")
+    player.stack += pot
 
 if __name__ == "__main__":
     main()

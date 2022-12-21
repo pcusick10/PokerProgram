@@ -7,6 +7,7 @@ class Player:
         self.playerNum = num
         self.cards = []
         self.stack = stack
+        self.handRank = 0
     
     def dealt(self, cardone, cardtwo):
         self.cards.append(cardone)
@@ -17,6 +18,12 @@ class Player:
     
     def printAmount(self):
         print(self.playerName + ": " + str(self.amount))
+    
+    def setHandRank(self, num):
+        self.handRank = num
+    
+    def getHandRank(self):
+        return self.handRank
 
 
 class Card:
